@@ -1,13 +1,14 @@
-FROM golang:1.21-alpine
+FROM golang:1.21-alpine as build
 
-WORKDIR /usr/src/app
+WORKDIR /app
 
-# pre-copy/cache go.mod for pre-downloading dependencies and only redownloading them in subsequent builds if they change
-COPY go.mod ./
-RUN go mod download && go mod verify
+COPY main.go .
+RUN go build -o hello ./main.go
 
-COPY . .
-RUN go build -v -o /usr/local/bin/app ./...
+FROM scratch
 
-CMD ["app"]
+WORKDIR /
 
+COPY --from=build /app/hello /app/hello
+
+CMD ["/app/hello"]
